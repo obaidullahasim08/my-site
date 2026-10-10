@@ -1,0 +1,345 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Salaam Shaista</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Fira+Code:wght@400;500&display=swap">
+<style>
+  /* Layout: a terminal message opens on a dark screen; after it is accepted, her name in red light flies in from everywhere and packs itself into a beating heart, with the greeting glowing in the middle. */
+  :root {
+    --bg: #09070a;
+    --red: #ff3d57;
+    --red-dim: #a02d3d;
+    --rose: #ffe1e4;
+    --ink: #cdbfc2;
+    --f-mono: 'Fira Code', ui-monospace, Menlo, Consolas, monospace;
+    --f-ar: 'Amiri', 'Noto Naskh Arabic', 'Scheherazade New', serif;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    padding-inline: 16px;
+    overflow: hidden;
+  }
+
+  .glow {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(ellipse 62% 46% at 50% 47%, rgba(255, 40, 70, 0.30), rgba(120, 10, 30, 0.10) 55%, transparent 75%);
+  }
+  .heart-on .glow { animation: glowin 2.4s ease forwards, breathe 2.2s ease-in-out 2.4s infinite alternate; }
+
+  #field { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  .stage {
+    position: fixed; inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    pointer-events: none;
+  }
+  .boot {
+    width: min(100%, 42ch);
+    text-align: left;
+    font-family: var(--f-mono);
+    font-size: clamp(0.74rem, 3.2vw, 0.9rem);
+    line-height: 1.9;
+    pointer-events: auto;
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .boot.gone { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+  .line { margin: 0; min-height: 1.9em; color: var(--red); overflow-wrap: anywhere; }
+  .line .tag { color: var(--red-dim); }
+  .typing::after {
+    content: "";
+    display: inline-block;
+    width: 0.55ch; height: 1.05em;
+    margin-left: 2px;
+    background: var(--red);
+    vertical-align: -0.15em;
+    animation: blink 1s steps(1) infinite;
+  }
+  .accept {
+    margin-top: 1.3rem;
+    font: 500 0.78rem/1 var(--f-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #fff;
+    background: linear-gradient(180deg, #ff4d66, #d92b47);
+    border: 0;
+    border-radius: 4px;
+    padding: 0.9rem 1.3rem;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(255, 120, 140, 0.5), 0 0 28px rgba(255, 61, 87, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease, transform 0.2s ease;
+  }
+  .accept.show { opacity: 1; pointer-events: auto; }
+  .accept:hover { transform: translateY(-1px); }
+  .accept:focus-visible { outline: 2px solid var(--rose); outline-offset: 3px; }
+  .hint { margin: 0.9rem 0 0; font-size: 0.7em; color: var(--red-dim); opacity: 0; transition: opacity 0.8s ease 0.3s; }
+  .hint.show { opacity: 1; }
+
+  .greeting {
+    position: fixed;
+    left: 50%; top: 47%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    max-width: 90vw;
+    text-align: center;
+    font-family: var(--f-ar);
+    font-weight: 700;
+    font-size: clamp(1.9rem, 8.4vw, 3.8rem);
+    line-height: 1.7;
+    color: var(--rose);
+    text-shadow: 0 0 10px rgba(10, 2, 5, 0.9), 0 0 24px rgba(10, 2, 5, 0.8), 0 0 38px rgba(255, 61, 87, 0.55);
+    opacity: 0;
+    filter: blur(12px);
+    transition: opacity 1.8s ease, filter 1.8s ease;
+    pointer-events: none;
+  }
+  .greeting::before {
+    content: "";
+    position: absolute;
+    inset: -30% -14%;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgba(9, 7, 10, 0.72), transparent);
+  }
+  .greeting.on { opacity: 1; filter: none; }
+
+  .replay {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    font: 400 0.72rem/1 var(--f-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--red-dim);
+    background: transparent;
+    border: 1px solid rgba(160, 45, 61, 0.55);
+    border-radius: 999px;
+    padding: 0.75rem 1.2rem;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease, color 0.2s, border-color 0.2s;
+  }
+  .replay.show { opacity: 1; pointer-events: auto; }
+  .replay:hover { color: var(--rose); border-color: var(--red); }
+  .replay:focus-visible { outline: 2px solid var(--rose); outline-offset: 3px; }
+
+  @keyframes blink { 50% { opacity: 0; } }
+  @keyframes glowin { to { opacity: 1; } }
+  @keyframes breathe { from { opacity: 0.72; } to { opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .heart-on .glow { animation: none; opacity: 1; }
+    .greeting, .boot, .accept, .hint, .replay { transition: none; }
+    .typing::after { animation: none; }
+  }
+</style>
+
+<div class="glow" aria-hidden="true"></div>
+<canvas id="field" role="img" aria-label="A heart made from the name Shaista, written over and over in red light"></canvas>
+
+<main class="stage">
+  <div class="boot" id="boot">
+    <p class="line"><span class="tag">[system]</span> <span id="t1"></span></p>
+    <p class="line"><span class="tag">&gt;</span> <span id="t2"></span></p>
+    <button class="accept" id="accept" type="button">Accept message</button>
+    <p class="hint" id="hint">(tap the button to open)</p>
+  </div>
+</main>
+
+<h1 class="greeting" id="greeting" lang="ar" dir="rtl">السَّلَامُ عَلَيْكُمْ</h1>
+<button class="replay" id="replay" type="button">Replay</button>
+
+<script>
+(function () {
+  var NAME = 'شائستة';
+  var $ = function (id) { return document.getElementById(id); };
+  var body = document.body, canvas = $('field'), ctx = canvas.getContext('2d');
+  var boot = $('boot'), accept = $('accept'), hint = $('hint'), greeting = $('greeting'), replay = $('replay');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var W = 0, H = 0, cx = 0, cy = 0, S = 1;
+  var parts = [], sprites = null, t0 = 0, state = 'boot', raf = 0, timers = [];
+
+  /* ---------- boot message ---------- */
+  function type(el, text, speed, done) {
+    if (reduce) { el.textContent = text; if (done) done(); return; }
+    el.classList.add('typing');
+    var i = 0;
+    (function step() {
+      el.textContent = text.slice(0, i++);
+      if (i <= text.length) setTimeout(step, speed + Math.random() * 30);
+      else { el.classList.remove('typing'); if (done) done(); }
+    })();
+  }
+  setTimeout(function () {
+    type($('t1'), 'Initializing heart.PROTOCOL_v2...', 32, function () {
+      setTimeout(function () {
+        type($('t2'), 'One encrypted package found for you.', 30, function () {
+          setTimeout(function () { accept.classList.add('show'); hint.classList.add('show'); }, 350);
+        });
+      }, 400);
+    });
+  }, 500);
+
+  /* ---------- heart of names ---------- */
+  function inside(x, y) { var a = x * x + y * y - 1; return a * a * a - x * x * y * y * y <= 0; }
+
+  function makeSprites(base) {
+    var mults = [0.82, 1, 1.22];
+    var cols = [['rgb(255,72,96)', 'rgba(255,40,70,0.95)'], ['rgb(255,205,175)', 'rgba(255,120,80,0.9)']];
+    return mults.map(function (m) {
+      var size = base * m;
+      return cols.map(function (c) {
+        var font = '700 ' + (size * dpr) + 'px Amiri, "Noto Naskh Arabic", serif';
+        var mc = document.createElement('canvas').getContext('2d');
+        mc.font = font; mc.direction = 'rtl';
+        var tw = mc.measureText(NAME).width;
+        var pad = size * 0.9 * dpr;
+        var cw = Math.ceil(tw + pad * 2), ch = Math.ceil(size * dpr * 1.9 + pad * 2);
+        var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+        var g = cv.getContext('2d');
+        g.font = font; g.direction = 'rtl'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.shadowColor = c[1]; g.shadowBlur = size * 0.7 * dpr; g.fillStyle = c[0];
+        g.fillText(NAME, cw / 2, ch / 2);
+        g.shadowBlur = 0; g.fillText(NAME, cw / 2, ch / 2);
+        return { cv: cv, w: tw / dpr, cw: cw / dpr, ch: ch / dpr };
+      });
+    });
+  }
+
+  function addPart(tx, ty, m, alpha) {
+    var d = Math.hypot(tx - cx, ty - cy) / S;
+    var hot = Math.random() < Math.max(0, 1 - d / 0.7) * 0.85 ? 1 : 0;
+    parts.push({
+      tx: tx, ty: ty, m: m, hot: hot, a: alpha,
+      sx: Math.random() * W, sy: Math.random() * H,
+      delay: Math.random() * 1.3, dur: 1.7 + Math.random() * 0.9,
+      amp: (Math.random() - 0.5) * 140,
+      f: 0.8 + Math.random() * 1.6, ph: Math.random() * 6.283
+    });
+  }
+
+  function layout() {
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var heartW = Math.min(W * 0.92, H * 0.58, 620);
+    S = heartW / 2.28; cx = W / 2; cy = H * 0.47;
+    greeting.style.top = cy + 'px';
+    var base = Math.max(10, Math.min(22, heartW / 25));
+    sprites = makeSprites(base);
+    parts = [];
+    var rowH = base * 1.38, gap = base * 0.35;
+    var top = cy - 1.125 * S, bottom = cy + 1.125 * S;
+    for (var py = top + rowH * 0.6; py < bottom; py += rowH) {
+      var v = -(py - cy) / S + 0.125, segs = [], start = null, px;
+      for (px = cx - 1.2 * S; px <= cx + 1.2 * S; px += 1) {
+        var on = inside((px - cx) / S, v);
+        if (on && start === null) start = px;
+        if (!on && start !== null) { segs.push([start, px]); start = null; }
+      }
+      segs.forEach(function (sg) {
+        var items = [], used = 0, len = sg[1] - sg[0] - base * 0.4, r;
+        for (;;) {
+          r = Math.random(); var m = r < 0.25 ? 0 : (r < 0.75 ? 1 : 2);
+          var w = sprites[m][0].w;
+          if (used + w > len) break;
+          items.push({ m: m, w: w }); used += w + gap;
+        }
+        if (!items.length) return;
+        var x = sg[0] + (sg[1] - sg[0] - (used - gap)) / 2;
+        items.forEach(function (it) {
+          addPart(x + it.w / 2, py, it.m, 0.6 + Math.random() * 0.4);
+          x += it.w + gap;
+        });
+      });
+    }
+    var extra = Math.round(parts.length * 0.22), n = 0, guard = 0;
+    while (n < extra && guard++ < 5000) {
+      var u = (Math.random() * 2.4 - 1.2), w2 = Math.random() * 2.4 - 1.1;
+      if (inside(u, w2)) { addPart(cx + u * S, cy - (w2 - 0.125) * S, 0, 0.3 + Math.random() * 0.3); n++; }
+    }
+  }
+
+  function draw(now) {
+    var t = (now - t0) / 1000;
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    var k = Math.min(1, Math.max(0, (t - 3.4) / 1.2));
+    var beat = 1;
+    if (!reduce) {
+      var s1 = Math.max(0, Math.sin(t * 6.0)), s2 = Math.max(0, Math.sin(t * 6.0 - 1.3));
+      beat = 1 + 0.03 * k * (Math.pow(s1, 10) + 0.6 * Math.pow(s2, 10));
+    }
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i], u = (t - p.delay) / p.dur;
+      if (u <= 0) continue;
+      if (u > 1) u = 1;
+      var e = 1 - Math.pow(1 - u, 3);
+      var x = p.sx + (p.tx - p.sx) * e, y = p.sy + (p.ty - p.sy) * e, a = p.a * (0.25 + 0.75 * e);
+      if (u < 1) {
+        var dx = p.tx - p.sx, dy = p.ty - p.sy, len = Math.hypot(dx, dy) || 1, sw = Math.sin(Math.PI * u) * p.amp;
+        x += -dy / len * sw; y += dx / len * sw;
+      } else if (!reduce) {
+        x += Math.sin(t * p.f + p.ph) * 1.1; y += Math.cos(t * p.f * 0.9 + p.ph) * 1.1;
+        a *= 0.82 + 0.18 * Math.sin(t * p.f * 1.7 + p.ph);
+      }
+      x = cx + (x - cx) * beat; y = cy + (y - cy) * beat;
+      var sp = sprites[p.m][p.hot];
+      ctx.globalAlpha = a;
+      ctx.drawImage(sp.cv, x - sp.cw / 2, y - sp.ch / 2, sp.cw, sp.ch);
+    }
+    ctx.globalAlpha = 1;
+    if (!reduce && !document.hidden) raf = requestAnimationFrame(draw);
+  }
+
+  function play() {
+    cancelAnimationFrame(raf);
+    timers.forEach(clearTimeout); timers = [];
+    greeting.classList.remove('on'); replay.classList.remove('show');
+    body.classList.add('heart-on');
+    t0 = performance.now() - (reduce ? 10000 : 0);
+    raf = requestAnimationFrame(draw);
+    timers.push(setTimeout(function () { greeting.classList.add('on'); }, reduce ? 0 : 3000));
+    timers.push(setTimeout(function () { replay.classList.add('show'); }, reduce ? 0 : 6500));
+  }
+
+  function openHeart() {
+    if (state !== 'boot') return;
+    state = 'heart';
+    boot.classList.add('gone');
+    setTimeout(function () { boot.hidden = true; }, 800);
+    var started = false;
+    function go() { if (started) return; started = true; layout(); play(); }
+    if (document.fonts && document.fonts.load) {
+      document.fonts.load('700 20px Amiri', NAME).then(go, go);
+      setTimeout(go, 1500);
+    } else { go(); }
+  }
+
+  var rz;
+  window.addEventListener('resize', function () {
+    if (state !== 'heart') return;
+    clearTimeout(rz);
+    rz = setTimeout(function () { layout(); if (reduce) { draw(performance.now() + 10000 * 0); } }, 150);
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && state === 'heart' && !reduce) { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); }
+  });
+  accept.addEventListener('click', openHeart);
+  replay.addEventListener('click', function () { if (state === 'heart') play(); });
+  if (document.fonts && document.fonts.load) document.fonts.load('700 20px Amiri', NAME);
+})();
+</script>
+
+</body></html>
